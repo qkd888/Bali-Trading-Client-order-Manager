@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enhanced Customer Order Management with Note Save</title>
+    <style>
+      :root {
+        --primary-color: #3498db;
+        --secondary-color: #2ecc71;
+        --danger-color: #e74c3c;
+        --warning-color: #f39c12;
+        --background-color: #ecf0f1;
+        --text-color: #34495e;
+        --done-color: #bdc3c7;
+      }
+      body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: var(--background-color);
+      }
+      h1,
+      h2,
+      h3 {
+        color: var(--primary-color);
+      }
+      #orderForm,
+      .order-item {
+        background-color: #fff;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+      textarea {
+        height: 100px;
+        resize: vertical;
+      }
+      button {
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      #newOrderBtn {
+        background-color: var(--secondary-color);
+        margin-bottom: 20px;
+      }
+      .order-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+      }
+      .order-actions button {
+        margin-left: 10px;
+      }
+      .edit-btn {
+        background-color: var(--warning-color);
+      }
+      .delete-btn {
+        background-color: var(--danger-color);
+      }
+      .done-btn {
+        background-color: var(--secondary-color);
+      }
+      .save-note-btn {
+        background-color: var(--primary-color);
+      }
+      .order-done {
+        background-color: var(--done-color);
+        color: #7f8c8d;
+      }
+      .order-done .done-btn {
+        background-color: var(--primary-color);
+      }
+      #notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        display: none;
+        z-index: 1000;
+      }
+      .success {
+        background-color: var(--secondary-color);
+      }
+      .error {
+        background-color: var(--danger-color);
+      }
+      .note-area {
+        background-color: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 10px;
+      }
+      .note-input-group {
+        display: flex;
+        margin-bottom: 10px;
+      }
+      .note-input {
+        flex-grow: 1;
+        margin-right: 10px;
+      }
+      .note-list {
+        list-style-type: none;
+        padding: 0;
+      }
+      .note-item {
+        background-color: #fff;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        padding: 5px 10px;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .note-delete {
+        background-color: var(--danger-color);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Customer Order Management</h1>
+    <button id="newOrderBtn">Create New Order</button>
+    <div id="orderForm" style="display: none">
+      <h2 id="formTitle">New Order</h2>
+      <form id="orderFormElement">
+        <div class="form-group">
+          <label for="orderDate">Date:</label>
+          <input type="date" id="orderDate" required />
+        </div>
+        <div class="form-group">
+          <label for="orderNumber">Order Number:</label>
+          <input type="text" id="orderNumber" required />
+        </div>
+        <div class="form-group">
+          <label for="clientName">Client Name:</label>
+          <input type="text" id="clientName" required />
+        </div>
+        <div class="form-group">
+          <label for="clientCell">Client Cell Number:</label>
+          <input type="tel" id="clientCell" required />
+        </div>
+        <div class="form-group">
+          <label for="productSKU">Product SKU:</label>
+          <input type="text" id="productSKU" required />
+        </div>
+        <div class="form-group">
+          <label for="productDescription">Product Description:</label>
+          <textarea id="productDescription" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="branch">Branch:</label>
+          <select id="branch" required>
+            <option value="">Select a branch</option>
+            <option value="Riviersdale">Riviersdale</option>
+            <option value="Klapmuts">Klapmuts</option>
+            <option value="Durbanville">Durbanville</option>
+            <option value="Stillbay West">Stillbay West</option>
+            <option value="Stillbay East">Stillbay East</option>
+            <option value="Mosselbay">Mosselbay</option>
+            <option value="George Mall">George Mall</option>
+            <option value="York Street">York Street</option>
+          </select>
+        </div>
+        <button type="submit" id="submitOrderBtn">Submit Order</button>
+        <button type="button" id="cancelOrderBtn">Cancel</button>
+      </form>
+    </div>
+    <div id="orderList">
+      <h2>Order List</h2>
+      <div id="orders"></div>
+    </div>
+    <div id="notification"></div>
+
+    <script>
+      let orders = [];
+      let editingIndex = -1;
+
+      const orderForm = document.getElementById("orderForm");
+      const orderFormElement = document.getElementById("orderFormElement");
+      const newOrderBtn = document.getElementById("newOrderBtn");
+      const cancelOrderBtn = document.getElementById("cancelOrderBtn");
+      const ordersContainer = document.getElementById("orders");
+      const formTitle = document.getElementById("formTitle");
+      const submitOrderBtn = document.getElementById("submitOrderBtn");
+      const notification = document.getElementById("notification");
+
+      function showNotification(message, type) {
+        notification.textContent = message;
+        notification.className = type;
+        notification.style.display = "block";
+        setTimeout(() => {
+          notification.style.display = "none";
+        }, 3000);
+      }
+
+      function displayOrders() {
+        ordersContainer.innerHTML = "";
+        orders.forEach((order, index) => {
+          const orderDiv = document.createElement("div");
+          orderDiv.className = `order-item ${order.done ? "order-done" : ""}`;
+          orderDiv.innerHTML = `
+                    <p><strong>Date:</strong> ${order.date}</p>
+                    <p><strong>Order Number:</strong> ${order.number}</p>
+                    <p><strong>Client:</strong> ${order.clientName}</p>
+                    <p><strong>Cell:</strong> ${order.clientCell}</p>
+                    <p><strong>Product SKU:</strong> ${order.productSKU}</p>
+                    <p><strong>Description:</strong> ${
+                      order.productDescription
+                    }</p>
+                    <p><strong>Branch:</strong> ${order.branch}</p>
+                    <div class="note-area">
+                        <h3>Notes</h3>
+                        <div class="note-input-group">
+                            <input type="text" class="note-input" placeholder="Add a note" data-order-index="${index}">
+                            <button class="save-note-btn" data-order-index="${index}">Save Note</button>
+                        </div>
+                        <ul class="note-list">
+                            ${
+                              order.notes
+                                ? order.notes
+                                    .map(
+                                      (note, noteIndex) => `
+                                <li class="note-item">
+                                    ${note}
+                                    <button class="note-delete" data-order-index="${index}" data-note-index="${noteIndex}">×</button>
+                                </li>
+                            `
+                                    )
+                                    .join("")
+                                : ""
+                            }
+                        </ul>
+                    </div>
+                    <div class="order-actions">
+                        <button class="edit-btn" onclick="editOrder(${index})">Edit</button>
+                        <button class="delete-btn" onclick="deleteOrder(${index})">Delete</button>
+                        <button class="done-btn" onclick="toggleDoneOrder(${index})">${
+            order.done ? "Undo" : "Done"
+          }</button>
+                    </div>
+                `;
+          ordersContainer.appendChild(orderDiv);
+        });
+
+        // Add event listeners for note save buttons and delete buttons
+        document.querySelectorAll(".save-note-btn").forEach((button) => {
+          button.addEventListener("click", saveNote);
+        });
+        document.querySelectorAll(".note-delete").forEach((button) => {
+          button.addEventListener("click", deleteNote);
+        });
+      }
+
+      function saveOrders() {
+        localStorage.setItem("orders", JSON.stringify(orders));
+        displayOrders();
+      }
+
+      function loadOrders() {
+        const storedOrders = localStorage.getItem("orders");
+        if (storedOrders) {
+          orders = JSON.parse(storedOrders);
+          displayOrders();
+        }
+      }
+
+      function addOrder(order) {
+        if (editingIndex === -1) {
+          orders.push({ ...order, done: false, notes: [] });
+          showNotification("Order added successfully", "success");
+        } else {
+          orders[editingIndex] = {
+            ...order,
+            done: orders[editingIndex].done,
+            notes: orders[editingIndex].notes || [],
+          };
+          showNotification("Order updated successfully", "success");
+          editingIndex = -1;
+        }
+        saveOrders();
+      }
+
+      function editOrder(index) {
+        editingIndex = index;
+        const order = orders[index];
+        document.getElementById("orderDate").value = order.date;
+        document.getElementById("orderNumber").value = order.number;
+        document.getElementById("clientName").value = order.clientName;
+        document.getElementById("clientCell").value = order.clientCell;
+        document.getElementById("productSKU").value = order.productSKU;
+        document.getElementById("productDescription").value =
+          order.productDescription;
+        document.getElementById("branch").value = order.branch;
+        orderForm.style.display = "block";
+        formTitle.textContent = "Edit Order";
+        submitOrderBtn.textContent = "Update Order";
+        newOrderBtn.style.display = "none";
+      }
+
+      function deleteOrder(index) {
+        if (confirm("Are you sure you want to delete this order?")) {
+          orders.splice(index, 1);
+          saveOrders();
+          showNotification("Order deleted successfully", "success");
+        }
+      }
+
+      function toggleDoneOrder(index) {
+        orders[index].done = !orders[index].done;
+        saveOrders();
+        showNotification(
+          `Order marked as ${orders[index].done ? "done" : "undone"}`,
+          "success"
+        );
+      }
+
+      function saveNote(event) {
+        const orderIndex = event.target.dataset.orderIndex;
+        const noteInput = event.target.previousElementSibling;
+        const note = noteInput.value.trim();
+        if (note) {
+          if (!orders[orderIndex].notes) {
+            orders[orderIndex].notes = [];
+          }
+          orders[orderIndex].notes.push(note);
+          saveOrders();
+          noteInput.value = "";
+          showNotification("Note added successfully", "success");
+        }
+      }
+
+      function deleteNote(event) {
+        const orderIndex = event.target.dataset.orderIndex;
+        const noteIndex = event.target.dataset.noteIndex;
+        orders[orderIndex].notes.splice(noteIndex, 1);
+        saveOrders();
+        showNotification("Note deleted successfully", "success");
+      }
+
+      function resetForm() {
+        orderFormElement.reset();
+        editingIndex = -1;
+        formTitle.textContent = "New Order";
+        submitOrderBtn.textContent = "Submit Order";
+        orderForm.style.display = "none";
+        newOrderBtn.style.display = "block";
+      }
+
+      newOrderBtn.addEventListener("click", () => {
+        resetForm();
+        orderForm.style.display = "block";
+        newOrderBtn.style.display = "none";
+      });
+
+      cancelOrderBtn.addEventListener("click", () => {
+        resetForm();
+      });
+
+      orderFormElement.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const order = {
+          date: document.getElementById("orderDate").value,
+          number: document.getElementById("orderNumber").value,
+          clientName: document.getElementById("clientName").value,
+          clientCell: document.getElementById("clientCell").value,
+          productSKU: document.getElementById("productSKU").value,
+          productDescription:
+            document.getElementById("productDescription").value,
+          branch: document.getElementById("branch").value,
+        };
+        addOrder(order);
+        resetForm();
+      });
+
+      window.addEventListener("load", loadOrders);
+    </script>
+  </body>
+</html>
