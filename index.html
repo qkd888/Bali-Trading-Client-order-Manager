@@ -216,6 +216,7 @@
     </div>
     <div id="orderList">
       <h2>Order List</h2>
+      <input type="text" id="searchInput" placeholder="Search..." />
       <div id="orders"></div>
     </div>
     <div id="notification"></div>
@@ -232,6 +233,7 @@
       const formTitle = document.getElementById("formTitle");
       const submitOrderBtn = document.getElementById("submitOrderBtn");
       const notification = document.getElementById("notification");
+      const searchInput = document.getElementById("searchInput");
 
       function showNotification(message, type) {
         notification.textContent = message;
@@ -242,53 +244,65 @@
         }, 3000);
       }
 
-      function displayOrders() {
+      function displayOrders(filterText = "") {
         ordersContainer.innerHTML = "";
-        orders.forEach((order, index) => {
+        const filteredOrders = filterText
+          ? orders.filter((order) => {
+              return (
+                order.clientName.toLowerCase().includes(filterText) ||
+                order.clientCell.includes(filterText) ||
+                order.productSKU.toLowerCase().includes(filterText) ||
+                order.number.toLowerCase().includes(filterText) ||
+                order.productDescription.toLowerCase().includes(filterText)
+              );
+            })
+          : orders;
+
+        filteredOrders.forEach((order, index) => {
           const orderDiv = document.createElement("div");
           orderDiv.className = `order-item ${order.done ? "order-done" : ""}`;
           orderDiv.innerHTML = `
-            <p><strong>Date and Time:</strong> ${new Date(
-              order.dateTime
-            ).toLocaleString()}</p>
-            <p><strong>Order Number:</strong> ${order.number}</p>
-            <p><strong>Client:</strong> ${order.clientName}</p>
-            <p><strong>Cell:</strong> ${order.clientCell}</p>
-            <p><strong>Product SKU:</strong> ${order.productSKU}</p>
-            <p><strong>Description:</strong> ${order.productDescription}</p>
-            <p><strong>Quantity:</strong> ${order.quantity}</p>
-            <p><strong>Branch:</strong> ${order.branch}</p>
-            <div class="note-area">
-              <div class="note-input-group">
-                <input class="note-input" type="text" placeholder="Add a note" />
-                <input class="note-time" type="time" />
-                <button class="save-note-btn" data-order-index="${index}">Save Note</button>
-              </div>
-              <ul class="note-list">
-                ${
-                  order.notes
-                    ? order.notes
-                        .map(
-                          (note, noteIndex) => `
-                  <li class="note-item">
-                    ${note.text} <em>at ${note.time}</em>
-                    <button class="note-delete" data-order-index="${index}" data-note-index="${noteIndex}">×</button>
-                  </li>
-                `
-                        )
-                        .join("")
-                    : ""
-                }
-              </ul>
+          <p><strong>Date and Time:</strong> ${new Date(
+            order.dateTime
+          ).toLocaleString()}</p>
+          <p><strong>Order Number:</strong> ${order.number}</p>
+          <p><strong>Client:</strong> ${order.clientName}</p>
+          <p><strong>Cell:</strong> ${order.clientCell}</p>
+          <p><strong>Product SKU:</strong> ${order.productSKU}</p>
+          <p><strong>Description:</strong> ${order.productDescription}</p>
+          <p><strong>Quantity:</strong> ${order.quantity}</p>
+          <p><strong>Branch:</strong> ${order.branch}</p>
+          <div class="note-area">
+            <div class="note-input-group">
+              <input class="note-input" type="text" placeholder="Add a note" />
+              <input class="note-time" type="time" />
+              <button class="save-note-btn" data-order-index="${index}">Save Note</button>
             </div>
-            <div class="order-actions">
-              <button class="edit-btn" onclick="editOrder(${index})">Edit</button>
-              <button class="delete-btn" onclick="deleteOrder(${index})">Delete</button>
-              <button class="done-btn" onclick="toggleDoneOrder(${index})">${
+            <ul class="note-list">
+              ${
+                order.notes
+                  ? order.notes
+                      .map(
+                        (note, noteIndex) => `
+                <li class="note-item">
+                  ${note.text} <em>at ${note.time}</em>
+                  <button class="note-delete" data-order-index="${index}" data-note-index="${noteIndex}">×</button>
+                </li>
+              `
+                      )
+                      .join("")
+                  : ""
+              }
+            </ul>
+          </div>
+          <div class="order-actions">
+            <button class="edit-btn" onclick="editOrder(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteOrder(${index})">Delete</button>
+            <button class="done-btn" onclick="toggleDoneOrder(${index})">${
             order.done ? "Undo" : "Done"
           }</button>
-            </div>
-          `;
+          </div>
+        `;
           ordersContainer.appendChild(orderDiv);
         });
 
@@ -425,6 +439,11 @@
         };
         addOrder(order);
         resetForm();
+      });
+
+      searchInput.addEventListener("input", () => {
+        const searchText = searchInput.value.trim().toLowerCase();
+        displayOrders(searchText);
       });
 
       window.addEventListener("load", loadOrders);
